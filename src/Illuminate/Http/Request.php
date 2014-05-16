@@ -469,6 +469,17 @@ class Request extends SymfonyRequest {
 	}
 
 	/**
+	 * Checks for the input whether it's checked or not
+	 *
+	 * @param  string $key
+	 * @return bool
+	 */
+	public function checked($key = null)
+	{
+		return !is_null($this->input($key, null));
+	}
+
+	/**
 	 * Get the input source for the request.
 	 *
 	 * @return \Symfony\Component\HttpFoundation\ParameterBag

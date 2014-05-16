@@ -364,4 +364,22 @@ class HttpRequestTest extends PHPUnit_Framework_TestCase {
 		$request->session();
 	}
 
+	public function testCheckedReturnsTrueWhenTheCheckboxIsChecked()
+	{
+		$request = Request::create('/', 'POST', ['checkbox' => 'on']);
+		$this->assertTrue($request->checked('checkbox'));
+	}
+
+	public function testCheckedReturnsFalseWhenTheCheckboxIsNotChecked()
+	{
+		$request = Request::create('/', 'POST');
+		$this->assertFalse($request->checked('checkbox'));
+	}
+
+	public function testArrayInputReturnTrueWhenSomeAreChecked()
+	{
+		$request = Request::create('/', 'POST', ['checkbox' => ['foo', 'bar', 'baz']]);
+		$this->assertTrue($request->checked('checkbox'));
+	}
+
 }
