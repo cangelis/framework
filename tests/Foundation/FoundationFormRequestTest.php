@@ -16,6 +16,7 @@ use Illuminate\Validation\Factory as ValidationFactory;
 use Illuminate\Validation\ValidationException;
 use Mockery as m;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 
 class FoundationFormRequestTest extends TestCase
 {
@@ -104,6 +105,24 @@ class FoundationFormRequestTest extends TestCase
     public function testPrepareForValidationRunsBeforeValidation()
     {
         $this->createRequest([], FoundationTestFormRequestHooks::class)->validateResolved();
+    }
+
+    public function testEmptyFillableDoesNotThrowException()
+    {
+        $this->createRequest(['foo' => 'bar'], FoundationTestFormRequestEmptyFillableStub::class)
+            ->validateResolved();
+    }
+
+    public function testNotEmptyFillableThrowsException()
+    {
+        $this->expectException(UnprocessableEntityHttpException::class);
+
+        $this->createRequest(['bar' => 'baz'], FoundationTestFormRequestNotEmptyFillable::class)->validateResolved();
+    }
+
+    public function testNotEmptyFillableWithValidInputDoesNotThrowException()
+    {
+        $this->createRequest(['foo' => 'baz'], FoundationTestFormRequestNotEmptyFillable::class)->validateResolved();
     }
 
     public function test_after_validation_runs_after_validation()
@@ -295,6 +314,36 @@ class FoundationTestFormRequestForbiddenStub extends FormRequest
     public function authorize()
     {
         return false;
+    }
+}
+
+class FoundationTestFormRequestEmptyFillableStub extends FormRequest
+{
+    protected $fillable = [];
+
+    public function authorize()
+    {
+        return true;
+    }
+
+    public function rules()
+    {
+        return [];
+    }
+}
+
+class FoundationTestFormRequestNotEmptyFillable extends FormRequest
+{
+    protected $fillable = ['foo'];
+
+    public function authorize()
+    {
+        return true;
+    }
+
+    public function rules()
+    {
+        return [];
     }
 }
 

@@ -2,11 +2,20 @@
 
 namespace Illuminate\Validation;
 
+use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
+
 /**
  * Provides default implementation of ValidatesWhenResolved contract.
  */
 trait ValidatesWhenResolvedTrait
 {
+    /**
+     * Inputs that are allowed to be filled
+     *
+     * @var array
+     */
+    protected $fillable = [];
+
     /**
      * Validate the class instance.
      *
@@ -18,6 +27,10 @@ trait ValidatesWhenResolvedTrait
 
         if (! $this->passesAuthorization()) {
             $this->failedAuthorization();
+        }
+
+        if (! $this->passesFillable()) {
+            $this->failedFillable();
         }
 
         $instance = $this->getValidatorInstance();
@@ -87,6 +100,26 @@ trait ValidatesWhenResolvedTrait
     }
 
     /**
+     * Returns false if the user supplies an input that is not fillable
+     *
+     * @return bool
+     */
+    protected function passesFillable()
+    {
+        if (empty($this->fillable)) {
+            return true;
+        }
+
+        foreach ($this->keys() as $key) {
+            if (!in_array($key, $this->fillable)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
      * Handle a failed authorization attempt.
      *
      * @return void
@@ -96,5 +129,17 @@ trait ValidatesWhenResolvedTrait
     protected function failedAuthorization()
     {
         throw new UnauthorizedException;
+    }
+
+    /**
+     * Handle a failed fillable attempt
+     *
+     * @return void
+     *
+     * @throws \Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException
+     */
+    protected function failedFillable()
+    {
+        throw new UnprocessableEntityHttpException;
     }
 }
